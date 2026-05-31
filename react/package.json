@@ -1,0 +1,36 @@
+{
+	"name": "vite-template-react",
+	"version": "1.4.0",
+	"type": "module",
+	"scripts": {
+		"start": "vite --port 3000 --open",
+		"dev": "vite --port 3000 --open",
+		"build": "vite build",
+		"serve": "vite preview --open",
+		"test": "vitest",
+		"postinstall": "patch-package"
+	},
+	"dependencies": {
+		"@uidotdev/usehooks": "^2.4.1",
+		"patch-package": "^8.0.1",
+		"postinstall-postinstall": "^2.1.0",
+		"prop-types": "^15.8.1",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"react-hexgrid": "^2.0.1"
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"@testing-library/jest-dom": "^6.6.3",
+		"@testing-library/react": "^16.2.0",
+		"@vitejs/plugin-react": "^4.3.4",
+		"eslint": "^9.39.4",
+		"eslint-plugin-react": "^7.37.5",
+		"eslint-plugin-react-hooks": "^7.1.1",
+		"eslint-plugin-react-refresh": "^0.5.2",
+		"globals": "^17.5.0",
+		"jsdom": "^26.0.0",
+		"vite": "^6.2.1",
+		"vitest": "^3.0.8"
+	}
+}

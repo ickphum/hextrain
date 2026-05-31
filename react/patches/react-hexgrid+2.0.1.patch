@@ -1,0 +1,34 @@
+diff --git a/node_modules/react-hexgrid/lib/Hexagon/Hexagon.js b/node_modules/react-hexgrid/lib/Hexagon/Hexagon.js
+index 80f2efb..6c8bbe0 100644
+--- a/node_modules/react-hexgrid/lib/Hexagon/Hexagon.js
++++ b/node_modules/react-hexgrid/lib/Hexagon/Hexagon.js
+@@ -20,7 +20,7 @@ import { useLayoutContext } from "../Layout";
+  */
+ export function Hexagon(props) {
+     // destructure props into their values
+-    const { q, r, s, fill, cellStyle, className, children, onDragStart, onDragEnd, onDrop, onDragOver, onMouseEnter, onMouseLeave, onMouseOver, onClick, data, fillOpacity } = props, rest = __rest(props, ["q", "r", "s", "fill", "cellStyle", "className", "children", "onDragStart", "onDragEnd", "onDrop", "onDragOver", "onMouseEnter", "onMouseLeave", "onMouseOver", "onClick", "data", "fillOpacity"]);
++    const { q, r, s, fill, cellStyle, className, cellClassName = '', children, onDragStart, onDragEnd, onDrop, onDragOver, onMouseEnter, onMouseLeave, onMouseOver, onClick, data, fillOpacity } = props, rest = __rest(props, ["q", "r", "s", "fill", "cellStyle", "className", "children", "onDragStart", "onDragEnd", "onDrop", "onDragOver", "onMouseEnter", "onMouseLeave", "onMouseOver", "onClick", "data", "fillOpacity"]);
+     const { layout, points } = useLayoutContext();
+     const { hex, pixel } = React.useMemo(() => {
+         const hex = new Hex(q, r, s);
+@@ -34,7 +34,8 @@ export function Hexagon(props) {
+     const state = { hex };
+     const fillId = fill ? `url(#${fill})` : undefined;
+     const draggable = { draggable: true };
+-    return (_jsx("g", Object.assign({ className: classNames("hexagon-group", className), transform: `translate(${pixel.x}, ${pixel.y})` }, rest, draggable, { onDragStart: (e) => {
++    return (_jsx("g", Object.assign({ className: classNames("hexagon-group", className), transform: `translate(${pixel.x}, ${pixel.y})` }, rest, draggable, {
++        onDragStart: (e) => {
+             if (onDragStart) {
+                 const targetProps = {
+                     hex: hex,
+@@ -78,7 +79,8 @@ export function Hexagon(props) {
+             if (onMouseLeave) {
+                 onMouseLeave(e, { data, state, props });
+             }
+-        } }, { children: _jsxs("g", Object.assign({ className: "hexagon" }, { children: [_jsx("polygon", { points: points, fill: fillId, style: cellStyle }), children] })) })));
++        }
++    }, { children: _jsxs("g", Object.assign({ className: `hexagon ${cellClassName}` }, { children: [_jsx("polygon", { points: points, fill: fillId, style: cellStyle }), children] })) })));
+ }
+ export default Hexagon;
+ //# sourceMappingURL=Hexagon.js.map
+\ No newline at end of file

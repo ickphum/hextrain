@@ -1,0 +1,116 @@
+body {
+  padding: 0;
+}
+
+/* svg.hexgrid {
+  background-color: rgb(122, 122, 122)
+} */
+
+/*
+Russian blue pattern:
+#7be3f6
+#4499a9
+#276a76
+#133b43
+#03090a
+*/
+
+select {
+  font-size: 20px !important;
+}
+
+.flexRow {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.pad1 {
+  padding: 1rem;
+}
+
+.gap1 {
+  gap: 1rem;
+}
+
+.border1 {
+  border: 1px solid black;
+  border-radius: 4px;
+}
+
+.button {
+  border: 1px solid blue;
+  /* padding-right: 1rem;
+  padding-left: 1rem; */
+  border-radius: 16px;
+  background-color: #4599ac;
+  cursor: pointer;
+  user-select: none;
+  width: 60px;
+
+  &.small {
+    border-radius: 4px;
+    width: 30px;
+    /* padding: 0.5rem; */
+  }
+
+  &.switchedOn {
+    background-color: #14cf24;
+  }
+}
+
+.button.disabled {
+  background-color: #aaa;
+}
+
+svg g {
+  fill: #005163;
+  fill-opacity: 0.1;
+  stroke: 'red';
+
+  &.newHeight {
+    fill: #084711 !important;
+  }
+}
+
+svg g:hover {
+  fill: Coral;
+
+}
+
+svg g.active .hexagon {
+  fill: Coral;
+  fill-opacity: 0.9;
+}
+
+svg g polygon {
+  stroke: #ccc;
+  stroke-width: 2;
+  transition: fill-opacity .5s;
+}
+
+svg g text {
+  font-size: 12px;
+  fill: rgba(247, 247, 247, 0.596);
+  fill-opacity: 0.7;
+  transition: fill-opacity .1s;
+
+  &.subtext {
+    font-size: 10px;
+
+  }
+}
+
+svg path {
+  fill: none;
+  stroke: #03090a;
+  stroke-width: 0.2em;
+  stroke-opacity: 0.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
