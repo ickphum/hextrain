@@ -158,6 +158,79 @@ Dropdown.propTypes = {
     onChange:       PropTypes.func.isRequired
 };
 
+function SaveButton( props ) {
+    const { filename, setFilename, getContent } = props;
+
+    const handleDownload = () => {
+        const data = getContent();
+        const blob = new Blob([ data ], { type: 'text/plain' });
+        const url = URL.createObjectURL( blob );
+        const link = document.createElement( 'a' );
+        link.href = url;
+        link.download = /\.ht/.test( filename ) ? filename : `${filename}.ht`;
+        link.click();
+        URL.revokeObjectURL( url );
+    };
+
+    console.log( `savebutton filename`, filename );
+
+    return <div>
+        <input
+            id='filename'
+            value={filename}
+            onChange={ e => setFilename( e.target.value )}
+        />
+        <button onClick={handleDownload} disabled={!( filename?.length )}>Save</button>
+    </div>;
+}
+SaveButton.propTypes = {
+    filename:       PropTypes.string.isRequired,
+    setFilename:    PropTypes.func.isRequired,
+    getContent:     PropTypes.func.isRequired
+};
+
+function LoadButton( props ) {
+    const { value, onLoad } = props;
+
+    let fileReader;
+
+    const [ showInput, setShowInput ] = useState( false );
+    const filenameRef = useRef( value );
+  
+    const handleFileRead = () => {
+        const content = fileReader.result;
+        // console.log( content );
+        onLoad( filenameRef.current, JSON.parse( content ) );
+        setShowInput( false );
+    };
+  
+    const handleFileChosen = file => {
+        console.log( `file chosen`, filenameRef.current );
+        fileReader = new FileReader();
+        fileReader.onloadend = handleFileRead;
+        fileReader.readAsText( file );
+    };
+  
+    return <div onClick={() => setShowInput( true )} >
+        Load
+        {showInput &&
+        <input
+            type='file'
+            id='file'
+            className='input-file'
+            accept='.ht'
+            onChange={e => {
+                // setFilename( e.target.files[ 0 ].name );
+                filenameRef.current = e.target.files[ 0 ].name;
+                handleFileChosen( e.target.files[ 0 ]);
+            }}
+        />}
+    </div>;
+};
+LoadButton.propTypes = {
+    value:          PropTypes.string.isRequired,
+    onLoad:         PropTypes.func.isRequired
+};
 
 function axialToOddR( hex ) {
     const parity = hex.r & 1;
@@ -334,6 +407,7 @@ function App() {
     const [ increment, setIncrement ] = useState( null ); 
     const [ hexData, setHexData ] = useState({});
     const [ undoStack, setUndoStack ] = useState([ '{}' ]);
+    const [ filename, setFilename ] = useState( '' );
 
     const [ hexagons, setHexagons ] = useState( GridGenerator[ area ]( size, size ).map( hex => ({ ...hex, data: { key: makeKey( hex ) } }) ) );
 
@@ -542,6 +616,7 @@ function App() {
         console.log( 'clear' );
         setHexData({});
         queueRender({});
+        setFilename( '' );
     }, [ queueRender ]);
 
     const undo = useCallback( () => {
@@ -572,9 +647,46 @@ function App() {
         };
     }, [ undo ]);
 
+    console.log( `filename`, filename );
+
     return (
         <div className="App" >
             <div className='flexRow' style={{ padding: 4 }}>
+                <SaveButton 
+                    filename={filename} 
+                    setFilename={setFilename} 
+                    getContent={() => {
+                        return JSON.stringify({
+                            hexData,
+                            penSize,
+                            area,
+                            hexSize,
+                            size,
+                            profile,
+                            heightLimit,
+                            widthLimit,
+                            showText
+                        }, undefined, 4 );
+                    }}
+                />
+                <LoadButton value={filename} onLoad={ ( file, data ) => {
+                    console.log( `file loaded`, { file, data });
+                    setFilename( file );
+
+                    setHexData( data.hexData );
+                    setPenSize( data.penSize );
+                    setArea( data.area );
+                    setHexSize( data.hexSize );
+                    setSize( data.size );
+                    setProfile( data.profile );
+                    setHeightLimit( data.heightLimit );
+                    setWidthLimit( data.widthLimit );
+                    setShowText( data.showText );
+
+                    setHexagons( GridGenerator[ data.area ]( data.size, data.size ).map( hex => ({ ...hex, data: { key: `${hex.q}:${hex.r}:${hex.s}` } }) ) );
+
+                    queueRender( data.hexData );
+                }} />
                 <Button label="brush" onClick={() => queueRender( hexData )}/>
                 <Button label="Clear" onClick={clearData}/>
                 <Button label="exposure_plus_1" onClick={fill}/>

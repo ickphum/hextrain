@@ -114,3 +114,8 @@ svg path {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+#filename {
+  font-size: 20px;
+  width: 100px;
+}
