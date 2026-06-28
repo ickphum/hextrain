@@ -172,8 +172,6 @@ function SaveButton( props ) {
         URL.revokeObjectURL( url );
     };
 
-    console.log( `savebutton filename`, filename );
-
     return <div>
         <input
             id='filename'
@@ -436,7 +434,7 @@ function App() {
             return newHexData;
         });
 
-    }, [ hexData ]);
+    }, [ ]);
 
     const applyPen = useCallback( ( hex, old, newObjects, increment ) => {
         // console.log( 'applyPen', hex );
@@ -505,7 +503,7 @@ function App() {
             return newHexData;
         });
 
-    }, [ hexData, penSize, profile, heightLimit, widthLimit ]);
+    }, [ penSize, profile, heightLimit, widthLimit ]);
 
     const commitNewHeights = useCallback( () => {
 
@@ -632,6 +630,53 @@ function App() {
         }
     }, [ undoStack ]);
 
+    const doMouseDown = useCallback(  e => {
+        setDraggedHexes([ currentHex.data.key ]);
+                                
+        // the pen is already set but this sets the new heights for the initial cell
+        const increment = e.shiftKey ? -1 : e.ctrlKey ? 0 : 1;
+        const lineStart = e.altKey ? currentHex.state.hex : null;
+        setPens( currentHex.state.hex, increment, lineStart );
+
+        setIncrement( increment );
+        setLineStart( lineStart );
+    }, [ currentHex ]);
+
+    const doMouseUp = useCallback( () => {
+        if ( draggedHexes )
+        {
+            // if ( lineStart )
+            //     setLineHeights();
+            commitNewHeights();
+            setDraggedHexes( null );
+            setIncrement( null );
+            setLineStart( null );
+            // setTimeout( () => {
+            //     render();
+            // }, 100 );
+                                    
+        }
+    }, [ draggedHexes ]);
+
+    const doMouseEnter = useCallback( ( e, h ) => {
+        // console.log( 'enter', h.state.hex );
+    
+        setCurrentHex({ ...h });
+
+        if ( draggedHexes )
+            draggedHexes.push( h.data.key );
+                                
+        // console.log( "setPens in" );
+        setPens( h.state.hex, increment, lineStart );
+        // console.log( "setPens out" );
+    }, [ increment, lineStart, setPens ]);
+
+    const doMouseLeave = useCallback( () => {
+        // console.log( "clearPens in" );
+        clearPens();
+        // console.log( "clearPens out" );
+    }, [  ]);
+
     useEffect( () => {
         const keyDownHandler = event => {
             if ( event.key === 'z' && event.ctrlKey ) {
@@ -646,8 +691,6 @@ function App() {
             document.removeEventListener( 'keydown', keyDownHandler );
         };
     }, [ undo ]);
-
-    console.log( `filename`, filename );
 
     return (
         <div className="App" >
@@ -742,46 +785,10 @@ function App() {
                                         ? 'rgb(180, 104, 5)'
                                         : null
                             }}
-                            // cellStyle={{ fillOpacity: 0.5 }}
-                            onMouseDown={ e => {
-                                setDraggedHexes([ currentHex.data.key ]);
-                                
-                                // the pen is already set but this sets the new heights for the initial cell
-                                const increment = e.shiftKey ? -1 : e.ctrlKey ? 0 : 1;
-                                const lineStart = e.altKey ? currentHex.state.hex : null;
-                                setPens( currentHex.state.hex, increment, lineStart );
-
-                                setIncrement( increment );
-                                setLineStart( lineStart );
-                            }} 
-                            onMouseUp={() => {
-                                if ( draggedHexes )
-                                {
-                                    // if ( lineStart )
-                                    //     setLineHeights();
-                                    commitNewHeights();
-                                    setDraggedHexes( null );
-                                    setIncrement( null );
-                                    setLineStart( null );
-                                    // setTimeout( () => {
-                                    //     render();
-                                    // }, 100 );
-                                    
-                                }
-                            }} 
-                            onMouseEnter={( e, h ) => {
-                                // console.log( 'enter', h.state.hex );
-    
-                                setCurrentHex({ ...h });
-
-                                if ( draggedHexes )
-                                    draggedHexes.push( h.data.key );
-                                
-                                setPens( h.state.hex, increment, lineStart );
-                            }} 
-                            onMouseLeave={() => {
-                                clearPens();
-                            }} 
+                            onMouseDown={doMouseDown} 
+                            onMouseUp={doMouseUp} 
+                            onMouseEnter={doMouseEnter} 
+                            onMouseLeave={doMouseLeave} 
                             data={{ ...hex.data }}
 
                         >
