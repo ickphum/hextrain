@@ -496,6 +496,21 @@ function App() {
     useEffect( () => { lineStartRef.current    = lineStart;    }, [ lineStart ]);
     useEffect( () => { draggedHexesRef.current = draggedHexes; }, [ draggedHexes ]);
 
+    // Cache ring offsets as relative {dq,dr,ds} vectors so computePenKeys and
+    // computeNewHeights don't need to call GridGenerator.ring() on every mouse move.
+    // Only recomputed when penSize or widthLimit changes.
+    const ringOffsetsRef = useRef([]);
+    useEffect( () => {
+        // ringOffsetsRef.current[radius] = array of {dq,dr,ds} for that ring
+        const origin = { q: 0, r: 0, s: 0 };
+        const offsets = [];
+        for ( let radius = 1; radius <= penSize && radius <= widthLimit; radius++ ) {
+            offsets[ radius ] = GridGenerator.ring( origin, radius )
+                .map( h => ({ dq: h.q, dr: h.r, ds: h.s }) );
+        }
+        ringOffsetsRef.current = offsets;
+    }, [ penSize, widthLimit ]);
+
     // --- Pen overlay (mouse-move only, no heights) ---
 
     const clearPens = useCallback( () => {
@@ -505,14 +520,16 @@ function App() {
 
     // Compute which keys are in the pen area and their intensities.
     // Returns { [key]: intensity } for centre + rings.
+    // Uses pre-cached ring offsets to avoid GridGenerator.ring() allocation on every move.
     const computePenKeys = useCallback( hex => {
-        const ps   = penSizeRef.current;
-        const wl   = widthLimitRef.current;
-        const result = { [ makeKey( hex ) ]: 1 };
+        const ps      = penSizeRef.current;
+        const wl      = widthLimitRef.current;
+        const offsets = ringOffsetsRef.current;
+        const result  = { [ makeKey( hex ) ]: 1 };
         for ( let radius = 1; radius <= ps && radius <= wl; radius++ ) {
             const intensity = 1 - radius * ( 1 / ( ps + 1 ) );
-            GridGenerator.ring( hex, radius ).forEach( h => {
-                result[ makeKey( h ) ] = intensity;
+            offsets[ radius ].forEach( ({ dq, dr, ds }) => {
+                result[ `${hex.q + dq}:${hex.r + dr}:${hex.s + ds}` ] = intensity;
             });
         }
         return result;
@@ -537,12 +554,13 @@ function App() {
     // --- New-height preview (during drag) ---
 
     const computeNewHeights = useCallback( ( hex, inc ) => {
-        const ps   = penSizeRef.current;
-        const wl   = widthLimitRef.current;
-        const hl   = heightLimitRef.current;
-        const prof = profileRef.current;
-        const old  = hexDataRef.current;
-        const newH = newHeightData; // current preview (carry-over for max/min logic)
+        const ps      = penSizeRef.current;
+        const wl      = widthLimitRef.current;
+        const hl      = heightLimitRef.current;
+        const prof    = profileRef.current;
+        const old     = hexDataRef.current;
+        const newH    = newHeightData; // current preview (carry-over for max/min logic)
+        const offsets = ringOffsetsRef.current;
         const ringHeights = profileHeights[ prof ][ ps ];
 
         const hexKey = makeKey( hex );
@@ -555,8 +573,8 @@ function App() {
         };
         for ( let radius = 1; radius <= ps && radius <= wl; radius++ ) {
             const delta = Math.min( ringHeights[ radius - 1 ], hl );
-            GridGenerator.ring( hex, radius ).forEach( h => {
-                const k = makeKey( h );
+            offsets[ radius ].forEach( ({ dq, dr, ds }) => {
+                const k = `${hex.q + dq}:${hex.r + dr}:${hex.s + ds}`;
                 result[ k ] = changeHexHeight(
                     { height: old[ k ]?.height, newHeight: newH[ k ] },
                     delta,
